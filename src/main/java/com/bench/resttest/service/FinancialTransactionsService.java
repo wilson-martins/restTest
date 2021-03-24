@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +28,8 @@ public class FinancialTransactionsService {
     }
 
     public void printFinancialTransactionsDailyBalance() {
+        log.info("Start to run printFinancialTransactionsDailyBalance");
+
         List<FinancialTransactionsDailyBalanceDto> balanceDtoList = this.getFinancialTransactionsDailyBalance();
 
         if (balanceDtoList.isEmpty()) {
@@ -36,39 +37,53 @@ public class FinancialTransactionsService {
             return;
         }
 
-        balanceDtoList = balanceDtoList.stream().sorted(Comparator.comparing(FinancialTransactionsDailyBalanceDto::getDate).reversed()).collect(Collectors.toList());
-
         for (FinancialTransactionsDailyBalanceDto balanceDto : balanceDtoList) {
             System.out.println(balanceDto.getDate() + " " + balanceDto.getDailyBalance());
         }
+
+        log.info("Finished to run printFinancialTransactionsDailyBalance");
     }
 
-    private List<FinancialTransactionsDailyBalanceDto> getFinancialTransactionsDailyBalance() {
+    public List<FinancialTransactionsDailyBalanceDto> getFinancialTransactionsDailyBalance() {
+        log.info("Start to run getFinancialTransactionsDailyBalance");
 
         Map<String, BigDecimal> transactionsMap = new ConcurrentHashMap<>();
-        int page = 1, totalPages = 1;
+        int page = 1, totalElements = 1, elementsRemaining = 1;
         do {
             FinancialTransactionsDto financialTransactionsDto = this.financialTransactionsProvider.getTransactions(page);
 
             if (financialTransactionsDto == null) {
-                log.error("FinancialTransactionsDto is Null");
-                return new ArrayList<>();
+                log.warn("FinancialTransactionsDto is Null");
+            } else {
+                if (totalElements == 1) {
+                    totalElements = elementsRemaining = financialTransactionsDto.getTotalCount();
+                    log.info("Total elements: [{}]", totalElements);
+                }
+
+                elementsRemaining -= financialTransactionsDto.getTransactions().size();
+                log.info("Fetched [{}] transactions. [{}] remaining", financialTransactionsDto.getTransactions().size(), elementsRemaining);
+
+                for (FinancialTransactionsItemDto itemDto : financialTransactionsDto.getTransactions()) {
+                    BigDecimal balance = transactionsMap.getOrDefault(itemDto.getDate(), BigDecimal.ZERO);
+                    transactionsMap.put(itemDto.getDate(), balance.add(itemDto.getAmount()));
+                }
             }
 
-            if (totalPages == 1) {
-                totalPages = financialTransactionsDto.getTotalCount();
-            }
-
-            for (FinancialTransactionsItemDto itemDto : financialTransactionsDto.getTransactions()) {
-                BigDecimal balance = transactionsMap.getOrDefault(itemDto.getDate(), BigDecimal.ZERO);
-                transactionsMap.put(itemDto.getDate(), balance.add(itemDto.getAmount()));
-            }
-
-        } while (page < totalPages);
+            page++;
+        } while (elementsRemaining > 0);
 
         List<FinancialTransactionsDailyBalanceDto> balanceDtoList = new ArrayList<>();
-        transactionsMap.forEach((k, v) -> balanceDtoList.add(new FinancialTransactionsDailyBalanceDto(k, v)));
 
+        for (Map.Entry<String, BigDecimal> entry : transactionsMap.entrySet()) {
+            balanceDtoList.add(new FinancialTransactionsDailyBalanceDto(entry.getKey(), entry.getValue()));
+        }
+        balanceDtoList = balanceDtoList.stream().sorted(Comparator.comparing(FinancialTransactionsDailyBalanceDto::getDate)).collect(Collectors.toList());
+
+        for (int i = 1; i < balanceDtoList.size(); i++) {
+            balanceDtoList.get(i).setDailyBalance(balanceDtoList.get(i-1).getDailyBalance().add(balanceDtoList.get(i).getDailyBalance()));
+        }
+
+        log.info("Finished to run getFinancialTransactionsDailyBalance");
         return balanceDtoList;
     }
 }
