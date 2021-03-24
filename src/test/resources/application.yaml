@@ -1,2 +1,11 @@
+spring:
+  main:
+    banner-mode: off
+
+logging:
+  level:
+    org.springframework: off
+    root: off
+
 transactions:
   api-url: https://resttest.bench.co/transactions/{page}.json

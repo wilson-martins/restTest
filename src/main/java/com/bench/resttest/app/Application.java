@@ -26,5 +26,7 @@ public class Application {
         FinancialTransactionsService financialTransactionsService = ctx.getBean(FinancialTransactionsService.class);
         financialTransactionsService.printFinancialTransactionsDailyBalance();
 
+        log.info("Terminating application");
+        ctx.close();
     }
 }

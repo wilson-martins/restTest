@@ -54,6 +54,7 @@ public class FinancialTransactionsService {
 
             if (financialTransactionsDto == null) {
                 log.warn("FinancialTransactionsDto is Null");
+                break;
             } else {
                 if (totalElements == 1) {
                     totalElements = elementsRemaining = financialTransactionsDto.getTotalCount();
