@@ -33,7 +33,7 @@ public class FinancialTransactionsService {
         List<FinancialTransactionsDailyBalanceDto> balanceDtoList = this.getFinancialTransactionsDailyBalance();
 
         if (balanceDtoList.isEmpty()) {
-            log.error("");
+            log.error("FinancialTransactionsDailyBalanceDto list is empty.");
             return;
         }
 

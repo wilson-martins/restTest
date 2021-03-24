@@ -2,12 +2,12 @@ package com.bench.resttest.provider;
 
 import com.bench.resttest.dto.FinancialTransactionsDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,7 +16,8 @@ import java.net.URL;
 @Service
 public class FinancialTransactionsProvider {
 
-    private final String API_URL = "https://resttest.bench.co/transactions/{page}.json";
+    @Value("${transactions.api-url:#{null}}")
+    private String API_URL;
 
     public FinancialTransactionsDto getTransactions(Integer page) {
         return this.getTransactions(page, 3);

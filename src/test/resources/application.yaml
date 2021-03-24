@@ -1,0 +1,2 @@
+transactions:
+  api-url: https://resttest.bench.co/transactions/{page}.json

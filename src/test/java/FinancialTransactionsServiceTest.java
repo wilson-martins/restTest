@@ -41,9 +41,7 @@ public class FinancialTransactionsServiceTest {
 
     private void mockProvider(final Map<Integer, FinancialTransactionsDto> response) {
         FinancialTransactionsProvider financialTransactionsProviderMock = Mockito.mock(FinancialTransactionsProvider.class, AdditionalAnswers.delegatesTo(this.financialTransactionsProvider));
-        response.forEach((k, v) -> {
-            Mockito.doReturn(v).when(financialTransactionsProviderMock).getTransactions(k);
-        });
+        response.forEach((k, v) -> Mockito.doReturn(v).when(financialTransactionsProviderMock).getTransactions(k));
         ReflectionTestUtils.setField(financialTransactionsService, "financialTransactionsProvider", financialTransactionsProviderMock);
     }
 
@@ -63,6 +61,24 @@ public class FinancialTransactionsServiceTest {
         Assert.assertEquals(BigDecimal.valueOf(-55.55), balanceDtoList.get(1).getDailyBalance());
         Assert.assertEquals("2013-12-14", balanceDtoList.get(2).getDate());
         Assert.assertEquals(BigDecimal.valueOf(-30.55), balanceDtoList.get(2).getDailyBalance());
+    }
+
+    @Test
+    public void b_getFinancialTransactionsDailyBalance_validMultiplePagesCase() {
+        // Mock provider
+        Map<Integer, FinancialTransactionsDto> mockResponse = new HashMap<>();
+        mockResponse.put(1, getFinancialTransactionsDto("transactions_b_1.json"));
+        mockResponse.put(2, getFinancialTransactionsDto("transactions_b_2.json"));
+
+        mockProvider(mockResponse);
+
+        List<FinancialTransactionsDailyBalanceDto> balanceDtoList = this.financialTransactionsService.getFinancialTransactionsDailyBalance();
+        balanceDtoList = balanceDtoList.stream().sorted(Comparator.comparing(FinancialTransactionsDailyBalanceDto::getDate)).collect(Collectors.toList());
+
+        Assert.assertEquals("2013-12-21", balanceDtoList.get(0).getDate());
+        Assert.assertEquals(BigDecimal.valueOf(-17.98), balanceDtoList.get(0).getDailyBalance());
+        Assert.assertEquals("2013-12-22", balanceDtoList.get(1).getDate());
+        Assert.assertEquals(BigDecimal.valueOf(-128.69), balanceDtoList.get(1).getDailyBalance());
     }
 
     private FinancialTransactionsDto getFinancialTransactionsDto(final String fileName) {
