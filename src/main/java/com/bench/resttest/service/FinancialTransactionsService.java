@@ -27,6 +27,9 @@ public class FinancialTransactionsService {
         this.financialTransactionsProvider = financialTransactionsProvider;
     }
 
+    /**
+     * Print all the transactions fetched from the financial transaction's API
+     */
     public void printFinancialTransactionsDailyBalance() {
         log.info("Start to run printFinancialTransactionsDailyBalance");
 
@@ -44,11 +47,17 @@ public class FinancialTransactionsService {
         log.info("Finished to run printFinancialTransactionsDailyBalance");
     }
 
+    /**
+     * Get the transactions from the API and calculates the balance for each date.
+     *
+     * @return a list of FinancialTransactionsDailyBalanceDto with the balance for each date.
+     */
     public List<FinancialTransactionsDailyBalanceDto> getFinancialTransactionsDailyBalance() {
         log.info("Start to run getFinancialTransactionsDailyBalance");
 
         Map<String, BigDecimal> transactionsMap = new ConcurrentHashMap<>();
         int page = 1, totalElements = 1, elementsRemaining = 1;
+        // Iterate through the pages until all the elements are fetched.
         do {
             FinancialTransactionsDto financialTransactionsDto = this.financialTransactionsProvider.getTransactions(page);
 
@@ -78,10 +87,12 @@ public class FinancialTransactionsService {
         for (Map.Entry<String, BigDecimal> entry : transactionsMap.entrySet()) {
             balanceDtoList.add(new FinancialTransactionsDailyBalanceDto(entry.getKey(), entry.getValue()));
         }
+        // Sorts the list by date from most old to most recent
         balanceDtoList = balanceDtoList.stream().sorted(Comparator.comparing(FinancialTransactionsDailyBalanceDto::getDate)).collect(Collectors.toList());
 
+        // Calculates the balance for each date
         for (int i = 1; i < balanceDtoList.size(); i++) {
-            balanceDtoList.get(i).setDailyBalance(balanceDtoList.get(i-1).getDailyBalance().add(balanceDtoList.get(i).getDailyBalance()));
+            balanceDtoList.get(i).setDailyBalance(balanceDtoList.get(i - 1).getDailyBalance().add(balanceDtoList.get(i).getDailyBalance()));
         }
 
         log.info("Finished to run getFinancialTransactionsDailyBalance");

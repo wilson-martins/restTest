@@ -23,6 +23,13 @@ public class FinancialTransactionsProvider {
         return this.getTransactions(page, 3);
     }
 
+    /**
+     * Get transactions from API
+     *
+     * @param page        page to be fetched.
+     * @param retriesLeft number of attempts remaining to make the request.
+     * @return FinancialTransactionsDto populated with the data from the transactions API.
+     */
     private FinancialTransactionsDto getTransactions(Integer page, int retriesLeft) {
         if (page == null) {
             log.warn("Page is Null. Skipped GET - Transactions call.");

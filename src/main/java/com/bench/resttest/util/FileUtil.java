@@ -14,6 +14,14 @@ import java.nio.file.StandardCopyOption;
 @Slf4j
 public class FileUtil {
 
+    /**
+     * Loads a file from the resources folder on the given path.
+     *
+     * @param filePath the path for the file that will be loaded
+     * @return the loaded file
+     * @throws NullPointerException if the file do not exists
+     * @throws IOException          if there's a problem opening the file
+     */
     public static File loadFileFromPath(String filePath) throws NullPointerException, IOException {
         try (InputStream in = FileUtil.class.getResourceAsStream(filePath)) {
             File tempFile = File.createTempFile(filePath, ".tmp");
