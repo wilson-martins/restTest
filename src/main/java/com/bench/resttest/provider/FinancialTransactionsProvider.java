@@ -28,6 +28,8 @@ public class FinancialTransactionsProvider {
             return null;
         }
 
+        log.info("Start to run getTransactions with params: page [{}], retriesLeft [{}]", page, retriesLeft);
+
         ResponseEntity<FinancialTransactionsDto> responseEntity;
         try {
             URL url = new URL(API_URL.replace("{page}", page.toString()));
@@ -35,6 +37,9 @@ public class FinancialTransactionsProvider {
             responseEntity = restTemplate.getForEntity(url.toURI(), FinancialTransactionsDto.class);
         } catch (MalformedURLException | URISyntaxException e) {
             log.warn("Could not call financial transactions API", e);
+            responseEntity = null;
+        } catch (Exception e) {
+            log.warn("Unknown error on call to financial transactions API", e);
             responseEntity = null;
         }
 

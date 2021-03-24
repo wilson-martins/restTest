@@ -1,16 +1,12 @@
 package com.bench.resttest.app;
 
+import com.bench.resttest.service.FinancialTransactionsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 @Slf4j
 @SpringBootApplication
@@ -27,7 +23,8 @@ public class Application {
         ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
         log.info("Application started");
 
-        ctx.getBean("")
+        FinancialTransactionsService financialTransactionsService = ctx.getBean(FinancialTransactionsService.class);
+        financialTransactionsService.printFinancialTransactionsDailyBalance();
 
     }
 }
